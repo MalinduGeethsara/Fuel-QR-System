@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Station Management</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootswatch@5.3.0/dist/zephyr/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/dataTables.bootstrap5.min.css">
+    <style>
+        body { background-color: #f4f7f6; padding-top: 30px; padding-bottom: 50px; }
+        .card { border: none; border-radius: 15px; box-shadow: 0 8px 20px rgba(0,0,0,0.04); margin-bottom: 30px; }
+        .card-header { border-radius: 15px 15px 0 0 !important; font-weight: bold; }
+    </style>
+</head>
+<body>
+<div class="container">
+    <div class="d-flex justify-content-between align-items-center mb-5">
+        <a href="index.html" class="btn btn-outline-secondary rounded-pill px-4"><i class="fas fa-arrow-left me-2"></i> Dashboard</a>
+        <h2 class="m-0 fw-bold text-success"><i class="fas fa-gas-pump me-2"></i> Station Management</h2>
+        <div style="width: 140px;"></div> 
+    </div>
+    
+    <div class="card">
+        <div class="card-header bg-success text-white py-3">
+            <h5 class="mb-0"><i class="fas fa-plus-circle me-2"></i> Add New Fuel Station</h5>
+        </div>
+        <div class="card-body p-4">
+            <form id="stationForm">
+                <div class="row mb-3">
+                    <div class="col-md-6">
+                        <label class="form-label text-muted">Station ID</label>
+                        <input type="text" class="form-control" id="stationId" placeholder="e.g., ST-001" required>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label text-muted">Station Name</label>
+                        <input type="text" class="form-control" id="stationName" placeholder="e.g., Colombo Central" required>
+                    </div>
+                </div>
+                <div class="row mb-4">
+                    <div class="col-md-6">
+                        <label class="form-label text-muted">Location</label>
+                        <input type="text" class="form-control" id="location" required>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label text-muted">Fuel Capacity (Liters)</label>
+                        <input type="number" class="form-control" id="capacity" required>
+                    </div>
+                </div>
+                <button type="submit" class="btn btn-success w-100 py-2 fw-bold"><i class="fas fa-save me-2"></i> Add Station</button>
+            </form>
+        </div>
+    </div>
+
+    <div class="card mt-5">
+        <div class="card-header bg-dark text-white py-3 d-flex justify-content-between align-items-center">
+            <h5 class="mb-0"><i class="fas fa-list me-2"></i> Active Fuel Stations</h5>
+            <button id="refreshStationsBtn" class="btn btn-sm btn-light rounded-pill px-3"><i class="fas fa-sync-alt me-1"></i> Refresh</button>
+        </div>
+        <div class="card-body p-4">
+            <div class="table-responsive">
+                <table class="table table-hover align-middle" id="stationsTable">
+                    <thead class="table-light">
+                        <tr>
+                            <th>Station ID</th>
+                            <th>Station Name</th>
+                            <th>Location</th>
+                            <th>Capacity (L)</th>
+                            <th class="text-center">Actions</th> 
+                        </tr>
+                    </thead>
+                    <tbody>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="editStationModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content border-0 shadow">
+      <div class="modal-header bg-warning text-dark">
+        <h5 class="modal-title fw-bold"><i class="fas fa-edit me-2"></i> Edit Fuel Station</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body p-4">
+        <form id="editStationForm">
+            <input type="hidden" id="editStationIdOriginal">
+            <div class="mb-3">
+                <label class="form-label">Station Name</label>
+                <input type="text" class="form-control" id="editStationName" required>
+            </div>
+            <div class="mb-3">
+                <label class="form-label">Location</label>
+                <input type="text" class="form-control" id="editLocation" required>
+            </div>
+            <div class="mb-4">
+                <label class="form-label">Fuel Capacity (Liters)</label>
+                <input type="number" class="form-control" id="editCapacity" required>
+            </div>
+            <button type="submit" class="btn btn-warning w-100 fw-bold">Save Changes</button>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
+<script src="https://cdn.datatables.net/1.13.6/js/dataTables.bootstrap5.min.js"></script>
+
+<script>
+$(document).ready(function() {
+
+    function loadStations() {
+        $.ajax({
+            url: 'http://localhost:5000/api/stations',
+            type: 'GET',
+            dataType: 'json',
+            success: function(stations) {
+                if ($.fn.DataTable.isDataTable('#stationsTable')) {
+                    $('#stationsTable').DataTable().destroy();
+                }
+
+                const tbody = $('#stationsTable tbody');
+                tbody.empty();
+                stations.forEach(function(s) {
+                    const row = `<tr>
+                        <td><span class="badge bg-secondary fs-6">${s.StationID}</span></td>
+                        <td>${s.StationName}</td>
+                        <td>${s.Location}</td>
+                        <td><span class="badge bg-success">${s.FuelCapacity} L</span></td>
+                        <td>
+                            <div class="d-flex justify-content-center gap-2">
+                                <button class="btn btn-warning btn-sm edit-btn" data-id="${s.StationID}" title="Edit"><i class="fas fa-pen"></i></button>
+                                <button class="btn btn-danger btn-sm delete-btn" data-id="${s.StationID}" title="Delete"><i class="fas fa-trash"></i></button>
+                            </div>
+                        </td>
+                    </tr>`;
+                    tbody.append(row);
+                });
+
+                $('#stationsTable').DataTable({ responsive: true });
+            }
+        });
+    }
+
+    loadStations();
+    $('#refreshStationsBtn').on('click', function() { loadStations(); });
+
+    $('#stationForm').on('submit', function(e) {
+        e.preventDefault();
+        const stationData = {
+            StationID: $('#stationId').val(), StationName: $('#stationName').val(),
+            Location: $('#location').val(), FuelCapacity: $('#capacity').val()
+        };
+
+        $.ajax({
+            url: 'http://localhost:5000/api/stations/add',
+            type: 'POST',
+            contentType: 'application/json',
+            data: JSON.stringify(stationData),
+            success: function() {
+                Swal.fire({ title: 'Added!', text: 'Station created successfully.', icon: 'success', confirmButtonColor: '#198754' });
+                $('#stationForm')[0].reset();
+                loadStations();
+            },
+            error: function() {
+                Swal.fire('Error!', 'Failed to add station. Make sure ID is unique.', 'error');
+            }
+        });
+    });
+
+    $('#stationsTable').on('click', '.delete-btn', function() {
+        const stationId = $(this).data('id');
+        Swal.fire({
+            title: 'Are you sure?',
+            text: `You are about to delete station ${stationId}.`,
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#d33',
+            cancelButtonColor: '#6c757d',
+            confirmButtonText: '<i class="fas fa-trash"></i> Delete'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                $.ajax({
+                    url: `http://localhost:5000/api/stations/id/${stationId}`,
+                    type: 'DELETE',
+                    success: function() {
+                        Swal.fire('Deleted!', 'The station has been removed.', 'success');
+                        loadStations(); 
+                    },
+                    error: function() { Swal.fire('Error!', 'Could not delete station.', 'error'); }
+                });
+            }
+        });
+    });
+
+    $('#stationsTable').on('click', '.edit-btn', function() {
+        const stationId = $(this).data('id');
+        $.ajax({
+            url: `http://localhost:5000/api/stations/id/${stationId}`,
+            type: 'GET',
+            success: function(station) {
+                $('#editStationIdOriginal').val(station.StationID);
+                $('#editStationName').val(station.StationName);
+                $('#editLocation').val(station.Location);
+                $('#editCapacity').val(station.FuelCapacity);
+                $('#editStationModal').modal('show');
+            }
+        });
+    });
+
+    $('#editStationForm').on('submit', function(e) {
+        e.preventDefault();
+        const stationId = $('#editStationIdOriginal').val();
+        const updatedData = {
+            StationName: $('#editStationName').val(),
+            Location: $('#editLocation').val(),
+            FuelCapacity: $('#editCapacity').val()
+        };
+
+        $.ajax({
+            url: `http://localhost:5000/api/stations/id/${stationId}`,
+            type: 'PUT',
+            contentType: 'application/json',
+            data: JSON.stringify(updatedData),
+            success: function() {
+                $('#editStationModal').modal('hide');
+                Swal.fire('Updated!', 'Station details saved.', 'success');
+                loadStations();
+            }
+        });
+    });
+});
+</script>
+</body>
+</html>

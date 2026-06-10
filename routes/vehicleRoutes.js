@@ -2,7 +2,6 @@ const express = require('express');
 const router = express.Router();
 const Vehicle = require('../models/Vehicle');
 
-// 1. Register a Vehicle
 router.post('/register', async (req, res) => {
   try {
     const newVehicle = new Vehicle(req.body);
@@ -13,7 +12,6 @@ router.post('/register', async (req, res) => {
   }
 });
 
-// 2. Show all Registered Vehicles
 router.get('/', async (req, res) => {
   try {
     const vehicles = await Vehicle.find();
@@ -23,7 +21,6 @@ router.get('/', async (req, res) => {
   }
 });
 
-// 3. Find by Registration Number (RegNo)
 router.get('/regno/:regNo', async (req, res) => {
   try {
     const vehicle = await Vehicle.findOne({ RegNo: req.params.regNo });
@@ -33,8 +30,6 @@ router.get('/regno/:regNo', async (req, res) => {
     res.status(500).json({ error: error.message });
   }
 });
-
-// 4. Find by First Name
 router.get('/firstname/:firstName', async (req, res) => {
   try {
     const vehicles = await Vehicle.find({ FirstName: req.params.firstName });
@@ -44,7 +39,6 @@ router.get('/firstname/:firstName', async (req, res) => {
   }
 });
 
-// 5. Find by Last Name
 router.get('/lastname/:lastName', async (req, res) => {
   try {
     const vehicles = await Vehicle.find({ LastName: req.params.lastName });
@@ -54,7 +48,6 @@ router.get('/lastname/:lastName', async (req, res) => {
   }
 });
 
-// 6. Find by Email
 router.get('/email/:email', async (req, res) => {
   try {
     const vehicles = await Vehicle.find({ Email: req.params.email });
@@ -64,7 +57,6 @@ router.get('/email/:email', async (req, res) => {
   }
 });
 
-// 7. Find by Nearest Station
 router.get('/station/:station', async (req, res) => {
   try {
     const vehicles = await Vehicle.find({ NearestStation: req.params.station });
@@ -74,7 +66,6 @@ router.get('/station/:station', async (req, res) => {
   }
 });
 
-// 8. Find by Fuel Type
 router.get('/fuel/:fuelType', async (req, res) => {
   try {
     const vehicles = await Vehicle.find({ FuelType: req.params.fuelType });
@@ -84,7 +75,6 @@ router.get('/fuel/:fuelType', async (req, res) => {
   }
 });
 
-// 9. Find by NIC
 router.get('/nic/:nic', async (req, res) => {
   try {
     const vehicles = await Vehicle.find({ OwnerNIC: req.params.nic });
@@ -94,7 +84,6 @@ router.get('/nic/:nic', async (req, res) => {
   }
 });
 
-// 10. Update Vehicle by Registration Number
 router.put('/regno/:regNo', async (req, res) => {
   try {
     const updatedVehicle = await Vehicle.findOneAndUpdate(
@@ -109,7 +98,6 @@ router.put('/regno/:regNo', async (req, res) => {
   }
 });
 
-// 11. Update Vehicle by Owner's First Name
 router.put('/firstname/:firstName', async (req, res) => {
   try {
     const updatedVehicle = await Vehicle.findOneAndUpdate(
@@ -124,7 +112,6 @@ router.put('/firstname/:firstName', async (req, res) => {
   }
 });
 
-// 12. Delete Vehicle by Registration Number
 router.delete('/regno/:regNo', async (req, res) => {
   try {
     const deletedVehicle = await Vehicle.findOneAndDelete({ RegNo: req.params.regNo });

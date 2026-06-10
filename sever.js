@@ -9,11 +9,10 @@ const PORT = process.env.PORT || 5000;
 app.use(cors());
 app.use(express.json());
 
-// --- ROUTES ---
 const vehicleRoutes = require('./routes/vehicleRoutes');
 app.use('/api/vehicles', vehicleRoutes);
 
-// NEW: Task 2 Station Routes
+
 const stationRoutes = require('./routes/stationRoutes');
 app.use('/api/stations', stationRoutes);
 

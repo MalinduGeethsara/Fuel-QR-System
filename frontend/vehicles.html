@@ -1,0 +1,278 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Vehicle Management</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootswatch@5.3.0/dist/zephyr/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/dataTables.bootstrap5.min.css">
+    <style>
+        body { background-color: #f4f7f6; padding-top: 30px; padding-bottom: 50px; }
+        .card { border: none; border-radius: 15px; box-shadow: 0 8px 20px rgba(0,0,0,0.04); margin-bottom: 30px; }
+        .card-header { border-radius: 15px 15px 0 0 !important; font-weight: bold; }
+    </style>
+</head>
+<body>
+<div class="container">
+    <div class="d-flex justify-content-between align-items-center mb-5">
+        <a href="index.html" class="btn btn-outline-secondary rounded-pill px-4"><i class="fas fa-arrow-left me-2"></i> Dashboard</a>
+        <h2 class="m-0 fw-bold text-primary"><i class="fas fa-car me-2"></i> Vehicle Management</h2>
+        <div style="width: 140px;"></div> 
+    </div>
+
+    <div class="card">
+        <div class="card-header bg-primary text-white py-3">
+            <h5 class="mb-0"><i class="fas fa-plus-circle me-2"></i> Register New Vehicle</h5>
+        </div>
+        <div class="card-body p-4">
+            <form id="registrationForm">
+                <div class="row mb-3">
+                    <div class="col-md-6">
+                        <label class="form-label text-muted">Registration Number</label>
+                        <input type="text" class="form-control" id="regNo" placeholder="e.g., ABC-1234" required>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label text-muted">Owner NIC</label>
+                        <input type="text" class="form-control" id="ownerNic" required>
+                    </div>
+                </div>
+                <div class="row mb-3">
+                    <div class="col-md-6">
+                        <label class="form-label text-muted">First Name</label>
+                        <input type="text" class="form-control" id="firstName" required>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label text-muted">Last Name</label>
+                        <input type="text" class="form-control" id="lastName" required>
+                    </div>
+                </div>
+                <div class="row mb-4">
+                    <div class="col-md-4">
+                        <label class="form-label text-muted">Email</label>
+                        <input type="email" class="form-control" id="email" required>
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label text-muted">Vehicle Model</label>
+                        <input type="text" class="form-control" id="vehicleModel" placeholder="e.g., Toyota Vitz" required>
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label text-muted">Fuel Type</label>
+                        <select class="form-select" id="fuelType">
+                            <option value="Petrol">Petrol</option>
+                            <option value="Diesel">Diesel</option>
+                            <option value="Electric">Electric</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="row mb-4">
+                    <div class="col-md-6">
+                        <label class="form-label text-muted">Nearest Station</label>
+                        <input type="text" class="form-control" id="nearestStation" required>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label text-muted">Generated QR Code ID</label>
+                        <input type="text" class="form-control" id="qrCode" required>
+                    </div>
+                </div>
+                <button type="submit" class="btn btn-primary w-100 py-2 fw-bold"><i class="fas fa-save me-2"></i> Register Vehicle</button>
+            </form>
+        </div>
+    </div>
+
+    <div class="card mt-5">
+        <div class="card-header bg-dark text-white py-3 d-flex justify-content-between align-items-center">
+            <h5 class="mb-0"><i class="fas fa-list me-2"></i> Registered Vehicles Database</h5>
+            <button id="refreshBtn" class="btn btn-sm btn-light rounded-pill px-3"><i class="fas fa-sync-alt me-1"></i> Refresh</button>
+        </div>
+        <div class="card-body p-4">
+            <div class="table-responsive">
+                <table class="table table-hover align-middle" id="vehiclesTable">
+                    <thead class="table-light">
+                        <tr>
+                            <th>Reg No</th>
+                            <th>Owner Name</th>
+                            <th>NIC</th>
+                            <th>Vehicle Model</th>
+                            <th>Fuel Type</th>
+                            <th>Nearest Station</th>
+                            <th class="text-center">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="editModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content border-0 shadow">
+      <div class="modal-header bg-warning text-dark">
+        <h5 class="modal-title fw-bold"><i class="fas fa-edit me-2"></i> Edit Vehicle</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body p-4">
+        <form id="editForm">
+            <input type="hidden" id="editRegNo">
+            <div class="mb-3">
+                <label class="form-label">First Name</label>
+                <input type="text" class="form-control" id="editFirstName" required>
+            </div>
+            <div class="mb-3">
+                <label class="form-label">Last Name</label>
+                <input type="text" class="form-control" id="editLastName" required>
+            </div>
+            <div class="mb-4">
+                <label class="form-label">Email</label>
+                <input type="email" class="form-control" id="editEmail" required>
+            </div>
+            <button type="submit" class="btn btn-warning w-100 fw-bold">Save Changes</button>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
+<script src="https://cdn.datatables.net/1.13.6/js/dataTables.bootstrap5.min.js"></script>
+
+<script>
+$(document).ready(function() {
+
+    function loadVehicles() {
+        $.ajax({
+            url: 'http://localhost:5000/api/vehicles',
+            type: 'GET',
+            dataType: 'json',
+            success: function(vehicles) {
+                if ($.fn.DataTable.isDataTable('#vehiclesTable')) {
+                    $('#vehiclesTable').DataTable().destroy();
+                }
+
+                const tbody = $('#vehiclesTable tbody');
+                tbody.empty();
+                vehicles.forEach(function(v) {
+                    const row = `<tr>
+                        <td><span class="badge bg-secondary fs-6">${v.RegNo}</span></td>
+                        <td>${v.FirstName} ${v.LastName}</td>
+                        <td>${v.OwnerNIC}</td>
+                        <td>${v.VehicleModel}</td>
+                        <td><span class="badge bg-info text-dark">${v.FuelType}</span></td>
+                        <td>${v.NearestStation}</td>
+                        <td>
+                            <div class="d-flex justify-content-center gap-2">
+                                <button class="btn btn-warning btn-sm edit-btn" data-regno="${v.RegNo}" title="Edit"><i class="fas fa-pen"></i></button>
+                                <button class="btn btn-danger btn-sm delete-btn" data-regno="${v.RegNo}" title="Delete"><i class="fas fa-trash"></i></button>
+                            </div>
+                        </td>
+                    </tr>`;
+                    tbody.append(row);
+                });
+
+                $('#vehiclesTable').DataTable({ responsive: true });
+            }
+        });
+    }
+
+    loadVehicles();
+    $('#refreshBtn').on('click', function() { loadVehicles(); });
+
+    $('#registrationForm').on('submit', function(e) {
+        e.preventDefault();
+        const vehicleData = {
+            RegNo: $('#regNo').val(), OwnerNIC: $('#ownerNic').val(),
+            FirstName: $('#firstName').val(), LastName: $('#lastName').val(),
+            Email: $('#email').val(), VehicleModel: $('#vehicleModel').val(),
+            FuelType: $('#fuelType').val(), NearestStation: $('#nearestStation').val(),
+            QRCode: $('#qrCode').val()
+        };
+
+        $.ajax({
+            url: 'http://localhost:5000/api/vehicles/register',
+            type: 'POST',
+            contentType: 'application/json',
+            data: JSON.stringify(vehicleData),
+            success: function() {
+                Swal.fire({ title: 'Registered!', text: 'Vehicle registered successfully.', icon: 'success', confirmButtonColor: '#3085d6' });
+                $('#registrationForm')[0].reset();
+                loadVehicles();
+            },
+            error: function(xhr) {
+                const errMsg = xhr.responseJSON ? xhr.responseJSON.message : 'Registration failed.';
+                Swal.fire({ title: 'Error!', text: errMsg, icon: 'error', confirmButtonColor: '#d33' });
+            }
+        });
+    });
+
+    $('#vehiclesTable').on('click', '.delete-btn', function() {
+        const regNo = $(this).data('regno');
+        
+        Swal.fire({
+            title: 'Are you sure?',
+            text: `You are about to delete vehicle ${regNo}. This cannot be undone!`,
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#d33',
+            cancelButtonColor: '#6c757d',
+            confirmButtonText: '<i class="fas fa-trash"></i> Yes, delete it!'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                $.ajax({
+                    url: `http://localhost:5000/api/vehicles/regno/${regNo}`,
+                    type: 'DELETE',
+                    success: function() {
+                        Swal.fire('Deleted!', 'The vehicle has been removed.', 'success');
+                        loadVehicles();
+                    },
+                    error: function() { Swal.fire('Error!', 'Failed to delete vehicle.', 'error'); }
+                });
+            }
+        });
+    });
+
+    $('#vehiclesTable').on('click', '.edit-btn', function() {
+        const regNo = $(this).data('regno');
+        $.ajax({
+            url: `http://localhost:5000/api/vehicles/regno/${regNo}`,
+            type: 'GET',
+            success: function(vehicle) {
+                $('#editRegNo').val(vehicle.RegNo);
+                $('#editFirstName').val(vehicle.FirstName);
+                $('#editLastName').val(vehicle.LastName);
+                $('#editEmail').val(vehicle.Email);
+                $('#editModal').modal('show');
+            }
+        });
+    });
+
+    $('#editForm').on('submit', function(e) {
+        e.preventDefault();
+        const regNo = $('#editRegNo').val();
+        const updatedData = {
+            FirstName: $('#editFirstName').val(),
+            LastName: $('#editLastName').val(),
+            Email: $('#editEmail').val()
+        };
+
+        $.ajax({
+            url: `http://localhost:5000/api/vehicles/regno/${regNo}`,
+            type: 'PUT',
+            contentType: 'application/json',
+            data: JSON.stringify(updatedData),
+            success: function() {
+                $('#editModal').modal('hide');
+                Swal.fire('Updated!', 'Vehicle details saved.', 'success');
+                loadVehicles();
+            }
+        });
+    });
+});
+</script>
+</body>
+</html>
